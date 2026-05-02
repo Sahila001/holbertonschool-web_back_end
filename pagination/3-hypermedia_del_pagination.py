@@ -32,12 +32,13 @@ class Server:
         dataset = self.indexed_dataset()
 
         assert isinstance(index, int) and index >= 0
-        assert index < len(dataset)
+        assert index in dataset
 
         data = []
         current_index = index
+        max_index = max(dataset.keys())
 
-        while len(data) < page_size:
+        while len(data) < page_size and current_index <= max_index:
             if current_index in dataset:
                 data.append(dataset[current_index])
             current_index += 1
@@ -46,5 +47,5 @@ class Server:
             "index": index,
             "data": data,
             "page_size": len(data),
-            "next_index": current_index
+            "next_index": current_index if current_index <= max_index else None
         }
