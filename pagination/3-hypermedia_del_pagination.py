@@ -31,13 +31,13 @@ class Server:
                         page_size: int = 10) -> Dict:
         dataset = self.indexed_dataset()
 
-        assert isinstance(index, int) and index in dataset
+        assert index is not None and isinstance(index, int)
+        assert 0 <= index < len(self.dataset())
 
         data = []
         current_index = index
-        max_index = max(dataset.keys())
 
-        while len(data) < page_size and current_index <= max_index:
+        while len(data) < page_size and current_index < len(self.dataset()):
             item = dataset.get(current_index)
             if item:
                 data.append(item)
@@ -45,7 +45,7 @@ class Server:
 
         return {
             "index": index,
-            "next_index": current_index if current_index <= max_index else None,
+            "next_index": current_index,
             "page_size": len(data),
             "data": data
         }
