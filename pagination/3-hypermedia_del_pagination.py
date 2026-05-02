@@ -17,7 +17,6 @@ class Server:
                 reader = csv.reader(f)
                 dataset = [row for row in reader]
             self.__dataset = dataset[1:]
-
         return self.__dataset
 
     def indexed_dataset(self) -> Dict[int, List]:
@@ -28,15 +27,17 @@ class Server:
             }
         return self.__indexed_dataset
 
-    def get_hyper_index(self, index: int = None, page_size: int = 10) -> Dict:
+    def get_hyper_index(self, index: int = None,
+                        page_size: int = 10) -> Dict:
         dataset = self.indexed_dataset()
-        
-        assert index is not None and 0 <= index < len(self.dataset())
+
+        assert isinstance(index, int) and index in dataset
 
         data = []
         current_index = index
-        
-        while len(data) < page_size and current_index < len(self.dataset()):
+        max_index = max(dataset.keys())
+
+        while len(data) < page_size and current_index <= max_index:
             item = dataset.get(current_index)
             if item:
                 data.append(item)
@@ -44,7 +45,7 @@ class Server:
 
         return {
             "index": index,
-            "next_index": current_index,
-            "page_size": page_size,
+            "next_index": current_index if current_index <= max_index else None,
+            "page_size": len(data),
             "data": data
-        }}
+        }
