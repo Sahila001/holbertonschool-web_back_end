@@ -1,33 +1,29 @@
 #!/usr/bin/env python3
-"""
-Script that provides stats about Nginx logs stored in MongoDB
-"""
-
+""" 12-log_stats """
 from pymongo import MongoClient
 
 
-def print_logs_stats():
-    """Print stats of nginx logs"""
-
-    client = MongoClient("mongodb://127.0.0.1:27017")
-    collection = client.logs.nginx
-
-    total_logs = collection.count_documents({})
-
-    print(f"{total_logs} logs")
-    print("Methods:")
-
-    methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
-
-    for method in methods:
-        count = collection.count_documents({"method": method})
-        print(f"\tmethod {method}: {count}")
-
-    status_check = collection.count_documents(
-        {"method": "GET", "path": "/status"}
-    )
-    print(f"{status_check} status check")
+def _count(coll, query=None):
+    """Count documents with compatibility across PyMongo versions."""
+    if query is None:
+        query = {}
+    try:
+        return coll.count_documents(query)
+    except Exception:
+        return coll.count(query)
 
 
 if __name__ == "__main__":
-    print_logs_stats()
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    collection = client.logs.nginx
+
+    print("{} logs".format(_count(collection)))
+    print("Methods:")
+    print("\tmethod GET: {}".format(_count(collection, {"method": "GET"})))
+    print("\tmethod POST: {}".format(_count(collection, {"method": "POST"})))
+    print("\tmethod PUT: {}".format(_count(collection, {"method": "PUT"})))
+    print("\tmethod PATCH: {}".format(_count(collection, {"method": "PATCH"})))
+    print("\tmethod DELETE: {}".format(_count(collection, {"method": "DELETE"})))
+    print("{} status check".format(
+        _count(collection, {"method": "GET", "path": "/status"})
+    ))
